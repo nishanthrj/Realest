@@ -1,6 +1,8 @@
+from typing import ContextManager
 from django.shortcuts import get_object_or_404, render
 from django.core.paginator import Paginator, PageNotAnInteger
 from .models import Listing
+from .choices import bedroom_choices, price_choices, state_choices
 
 
 def index(request):
@@ -26,4 +28,44 @@ def listing(request, listing_id):
 	return render(request,  'listings/listing.html', context)
 
 def search(request):
-	return render(request,  'listings/search.html')
+	search_results = Listing.objects.order_by('-list_date')
+
+	if 'keywords' in request.GET:
+		keywords = request.GET['keywords']
+		if keywords:
+			search_results = search_results.filter(description__icontains=keywords)
+
+	if 'city' in request.GET:
+		city = request.GET['city']
+		if city:
+			search_results = search_results.filter(city__iexact=city)
+
+	if 'state' in request.GET:
+		state = request.GET['state']
+		if state:
+			search_results = search_results.filter(state__iexact=state)
+
+	if 'bedrooms' in request.GET:
+		bedrooms = request.GET['bedrooms']
+		if bedrooms:
+			search_results = search_results.filter(bedrooms__lte=bedrooms)
+
+	if 'price' in request.GET:
+		price = request.GET['price']
+		if price:
+			search_results = search_results.filter(price__lte=price)
+
+
+	paginator = Paginator(search_results, 12)
+	page = request.GET.get('page')
+	paged_listings = paginator.get_page(page) 
+
+	context = {
+		'bedroom_choices': bedroom_choices,
+		'price_choices': price_choices,
+		'state_choices': state_choices,
+		'listings': paged_listings,
+		'values': request.GET
+	}
+
+	return render(request,  'listings/search.html', context)
