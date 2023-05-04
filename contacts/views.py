@@ -5,33 +5,50 @@ from .models import Contact
 
 
 def contact(request):
-	if request.method == "POST":
-		listing = request.POST['listing']
-		listing_id = request.POST['listing_id']
-		name = request.POST['name']
-		email = request.POST['email']
-		phone = request.POST['phone']
-		message = request.POST['message']
-		user_id = request.POST['user_id']
-		realtor_email = request.POST['realtor_email']
+    if request.method == "POST":
+        listing = request.POST["listing"]
+        listing_id = request.POST["listing_id"]
+        name = request.POST["name"]
+        email = request.POST["email"]
+        phone = request.POST["phone"]
+        message = request.POST["message"]
+        user_id = request.POST["user_id"]
+        realtor_email = request.POST["realtor_email"]
 
-		if request.user.is_authenticated:
-			user_id = request.user.id
-			has_contacted = Contact.objects.all().filter(user_id=user_id, listing_id=listing_id)
-			if has_contacted:
-				messages.error(request, "You have already made an Inquiry for this property.")
-				return redirect('/listings/' + listing_id)
+        if request.user.is_authenticated:
+            user_id = request.user.id
+            has_contacted = Contact.objects.all().filter(
+                user_id=user_id, listing_id=listing_id
+            )
+            if has_contacted:
+                messages.error(
+                    request, "You have already made an Inquiry for this property."
+                )
+                return redirect("/listings/" + listing_id)
 
-		contact = Contact(listing=listing, listing_id=listing_id, name=name, email=email, phone=phone, message=message, user_id=user_id)
-		contact.save()
+        contact = Contact(
+            listing=listing,
+            listing_id=listing_id,
+            name=name,
+            email=email,
+            phone=phone,
+            message=message,
+            user_id=user_id,
+        )
+        contact.save()
 
-		send_mail(
-			'New Inquiry for the Property' + listing,
-			'Client Information:\nName: '+ name + '\nEmail: ' + email + '\nPhone: ' + phone + '\nMessage: ' + message,
-			'nishanthmessi2002@gmail.com',
-			[realtor_email, 'mycloudiswhite@gmail.com'],
-			fail_silently=False
-		)
+        # email = ''
 
-		messages.success(request, "Your request has been submitted. A Realtor will reach out to you soon")
-		return redirect('/listings/' + listing_id)
+        # send_mail(
+        # 	'New Inquiry for the Property ' + listing,
+        # 	'Client Information:\nName: '+ name + '\nEmail: ' + email + '\nPhone: ' + phone + '\nMessage: ' + message,
+        # 	email,
+        # 	[realtor_email],
+        # 	fail_silently=False
+        # )
+
+        messages.success(
+            request,
+            "Your request has been submitted. A Realtor will reach out to you soon",
+        )
+        return redirect("/listings/" + listing_id)

@@ -6,66 +6,63 @@ from .choices import bedroom_choices, price_choices, state_choices
 
 
 def index(request):
-	listings = Listing.objects.order_by('-list_date').filter(is_published=True)
+    listings = Listing.objects.order_by("-list_date").filter(is_published=True)
 
-	paginator = Paginator(listings, 4)
-	page = request.GET.get('page')
-	paged_listings = paginator.get_page(page)
+    paginator = Paginator(listings, 4)
+    page = request.GET.get("page")
+    paged_listings = paginator.get_page(page)
 
-	context = {
-		'listings': paged_listings
-	}
+    context = {"listings": paged_listings}
 
-	return render(request,  'listings/listings.html', context)
+    return render(request, "listings/listings.html", context)
+
 
 def listing(request, listing_id):
-	listing = get_object_or_404(Listing, pk=listing_id)
-	
-	context = {
-		'listing': listing
-	}
+    listing = get_object_or_404(Listing, pk=listing_id)
 
-	return render(request,  'listings/listing.html', context)
+    context = {"listing": listing}
+
+    return render(request, "listings/listing.html", context)
+
 
 def search(request):
-	search_results = Listing.objects.order_by('-list_date')
+    search_results = Listing.objects.order_by("-list_date")
 
-	if 'keywords' in request.GET:
-		keywords = request.GET['keywords']
-		if keywords:
-			search_results = search_results.filter(description__icontains=keywords)
+    if "keywords" in request.GET:
+        keywords = request.GET["keywords"]
+        if keywords:
+            search_results = search_results.filter(description__icontains=keywords)
 
-	if 'city' in request.GET:
-		city = request.GET['city']
-		if city:
-			search_results = search_results.filter(city__iexact=city)
+    if "city" in request.GET:
+        city = request.GET["city"]
+        if city:
+            search_results = search_results.filter(city__iexact=city)
 
-	if 'state' in request.GET:
-		state = request.GET['state']
-		if state:
-			search_results = search_results.filter(state__iexact=state)
+    if "state" in request.GET:
+        state = request.GET["state"]
+        if state:
+            search_results = search_results.filter(state__iexact=state)
 
-	if 'bedrooms' in request.GET:
-		bedrooms = request.GET['bedrooms']
-		if bedrooms:
-			search_results = search_results.filter(bedrooms__lte=bedrooms)
+    if "bedrooms" in request.GET:
+        bedrooms = request.GET["bedrooms"]
+        if bedrooms:
+            search_results = search_results.filter(bedrooms__lte=bedrooms)
 
-	if 'price' in request.GET:
-		price = request.GET['price']
-		if price:
-			search_results = search_results.filter(price__lte=price)
+    if "price" in request.GET:
+        price = request.GET["price"]
+        if price:
+            search_results = search_results.filter(price__lte=price)
 
+    paginator = Paginator(search_results, 12)
+    page = request.GET.get("page")
+    paged_listings = paginator.get_page(page)
 
-	paginator = Paginator(search_results, 12)
-	page = request.GET.get('page')
-	paged_listings = paginator.get_page(page) 
+    context = {
+        "bedroom_choices": bedroom_choices,
+        "price_choices": price_choices,
+        "state_choices": state_choices,
+        "listings": paged_listings,
+        "values": request.GET.dict(),
+    }
 
-	context = {
-		'bedroom_choices': bedroom_choices,
-		'price_choices': price_choices,
-		'state_choices': state_choices,
-		'listings': paged_listings,
-		'values': request.GET
-	}
-
-	return render(request,  'listings/search.html', context)
+    return render(request, "listings/search.html", context)
